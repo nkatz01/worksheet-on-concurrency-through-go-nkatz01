@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+
 func TestMain(t *testing.T) {
 	fetchSig := fetchSignalInstance()
 

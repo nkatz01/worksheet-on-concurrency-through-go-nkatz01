@@ -1,3 +1,4 @@
+
 /*
  Your task is to change the code to limit the crawler to at most one
  page per second, while maintaining concurrency (in other words,
@@ -9,17 +10,21 @@ package main
 import (
 	"fmt"
 	"sync"
+	"time"
 )
+
+const rateLimit = time.Second
 
 // Crawl uses `fetcher` from the `mockfetcher.go` file to imitate a real crawler.
 // It crawls until the maximum depth has reached.
 func Crawl(url string, depth int, wg *sync.WaitGroup) {
 	defer wg.Done()
+	throttle := time.Tick(rateLimit)
 
 	if depth <= 0 {
 		return
 	}
-
+	<-throttle
 	body, urls, err := fetcher.Fetch(url)
 	if err != nil {
 		fmt.Println(err)
@@ -30,7 +35,9 @@ func Crawl(url string, depth int, wg *sync.WaitGroup) {
 
 	wg.Add(len(urls))
 	for _, u := range urls {
+
 		// Do not remove the `go` keyword, as Crawl() must be called concurrently
+		<-throttle
 		go Crawl(u, depth-1, wg)
 	}
 	return
@@ -43,3 +50,4 @@ func main() {
 	Crawl("http://golang.org/", 4, &wg)
 	wg.Wait()
 }
+
